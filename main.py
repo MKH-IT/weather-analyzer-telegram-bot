@@ -1,6 +1,5 @@
 import telebot
 from decouple import config
-from telebot import types
 
 from database import JSONDatabase, Database
 from helpers import gen_languages_markup
