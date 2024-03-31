@@ -1,55 +1,100 @@
-import telebot
-from telebot import types
-from decouple import config
+from datetime import datetime
 
-from database import JSONDatabase, Database
-from helpers import gen_languages_markup
-from geopy.geocoders import Nominatim
+import telebot
+from decouple import config
+from telebot import types
+import schedule
+import time
+
+from database import JSONDatabase
+from models import UserRepositoryJSONHandler
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN")
 
 bot = telebot.TeleBot(TELEGRAM_API_TOKEN)
 
 
-geolocator = Nominatim(user_agent="telegram_bot")
-
 @bot.message_handler(commands=["start"])
 def start(message):
-    username = message.from_user.first_name
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup.add(
+        types.KeyboardButton("English 🇬🇧"), types.KeyboardButton("Русский язык 🇷🇺")
+    )
     bot.send_message(
         message.chat.id,
-        f"Hello {username}!",
+        """
+        🇬🇧 Please select a language: \n🇷🇺 Пожалуйста, выберите язык:
+        """,
+        reply_markup=markup,
     )
 
-@bot.message_handler(commands=["geophone"])
-def geophone(message):
-    keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
-    button_phone = types.KeyboardButton(text="Send phone number", request_contact=True)
-    button_geo = types.KeyboardButton(text="Send location", request_location=True)
-    keyboard.add(button_phone, button_geo)
-    bot.send_message(message.chat.id, "Please send phone number or location", reply_markup=keyboard)
+
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    if message.text == "English 🇬🇧":
+        ask_location(message)
+    elif message.text == "Русский язык 🇷🇺":
+        ask_location(message)
+    else:
+        bot.send_message(message.chat.id, "Please select a valid language.")
+
+    print(message.text)  # TODO: Save the language to the database.
+
+
+def ask_location(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup.add(types.KeyboardButton("Share Location", request_location=True))
+    bot.send_message(
+        message.chat.id, "Please share your location:", reply_markup=markup
+    )
 
 
 @bot.message_handler(content_types=["location"])
 def handle_location(message):
-    location = geolocator.reverse((message.location.latitude, message.location.longitude), language='en')
-    address = location.raw.get('address', {})
-    city = address.get('city') or address.get('town') or address.get('county') or 'Unknown'
-    bot.send_message(message.chat.id, f"You are in {city}")
+    print(message)  # TODO: Save the location to the database.
+    ask_phone_number(message)
+
+
+def ask_phone_number(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    phone_number_button = types.KeyboardButton(
+        text="Send phone number", request_contact=True
+    )
+    markup.add(phone_number_button)
+    bot.send_message(
+        message.chat.id, "Please send your phone number:", reply_markup=markup
+    )
 
 
 @bot.message_handler(content_types=["contact"])
-def handle_contact(message):
-    contact = message.contact
-    bot.send_message(message.chat.id, f"Thank you for sharing your contact information, {contact.first_name}.")
+def handle_phone_number(message):
+    print(message)  # TODO: Save the phone number to the database.
+    remove_keyboard = types.ReplyKeyboardRemove(selective=False)
+    bot.send_message(
+        message.chat.id,
+        "Thank you! Your phone number has been recorded.",
+        reply_markup=remove_keyboard,
+    )
 
-@bot.message_handler(func=lambda message: True)
-def echo_message(message):
-    bot.reply_to(message, message.text)
+
+def send_weather_info():
+    """
+    Function to send weather information to all users on the specified time.
+    """
+    chat_ids = []  # TODO: Get chat_ids from the database.
+    message = f"This is a scheduled message. {datetime.now()}"
+    for chat_id in chat_ids:
+        bot.send_message(chat_id=chat_id, text=message)
+
 
 def main():
-    database = Database(JSONDatabase())
+    database = UserRepositoryJSONHandler(database=JSONDatabase())
     bot.polling(non_stop=True)
+    schedule.every().hour.do(send_weather_info)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
 
 if __name__ == "__main__":
     main()
