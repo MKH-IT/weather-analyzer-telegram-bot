@@ -2,7 +2,8 @@ import telebot
 from decouple import config
 from telebot import types
 
-from database import JSONDatabase, Database
+from database import JSONDatabase
+from models import UserRepositoryJSONHandler
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN")
 
@@ -67,7 +68,7 @@ def handle_contact(message):
 
 
 def main():
-    database = Database(JSONDatabase())
+    database = UserRepositoryJSONHandler(database=JSONDatabase())
     bot.polling(non_stop=True)
 
 

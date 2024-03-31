@@ -1,23 +1,32 @@
 import logging
-from abc import ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 
 class DatabaseBase(ABC):
-    pass
+    @abstractmethod
+    def create_database(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def read_all(self, *args, **kwargs):
+        raise NotImplementedError
 
 
 class JSONDatabase(DatabaseBase):
-    FILE_PATH = "database.json"
+    _FILE_PATH = "database.json"
 
     def __init__(self):
+        self.create_database()
+
+    def create_database(self):
         try:
-            Path(self.FILE_PATH).touch()
-            logging.info(f"File '{self.FILE_PATH}' created successfully!")
+            Path(self._FILE_PATH).touch()
+            logging.info(f"File '{self._FILE_PATH}' created successfully!")
         except IOError:
-            logging.error(f"Unable to create file '{self.FILE_PATH}'")
+            logging.error(f"Unable to create file '{self._FILE_PATH}'")
+        return self
 
-
-class Database:
-    def __init__(self, database: DatabaseBase):
-        self.database = database
+    def read_all(self):
+        with open(self._FILE_PATH, "r") as file:
+            return file.read()
