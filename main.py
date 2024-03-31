@@ -63,7 +63,7 @@ def ask_phone_number(message):
 
 
 @bot.message_handler(content_types=["contact"])
-def handle_contact(message):
+def handle_phone_number(message):
     print(message)  # TODO: Save the phone number to the database.
     remove_keyboard = types.ReplyKeyboardRemove(selective=False)
     bot.send_message(
