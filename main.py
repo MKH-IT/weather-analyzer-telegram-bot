@@ -90,7 +90,7 @@ def send_weather_info():
 def main():
     database = UserRepositoryJSONHandler(database=JSONDatabase())
     bot.polling(non_stop=True)
-    schedule.every(5).seconds.do(send_weather_info)
+    schedule.every().hour.do(send_weather_info)
     while True:
         schedule.run_pending()
         time.sleep(1)
