@@ -31,14 +31,20 @@ def start(message):
 
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
-    if message.text == "English 🇬🇧":
+    if message.text in ["English 🇬🇧", "Русский язык 🇷🇺"]:
+        print(message.text)  # TODO: Save the language to the database.
+        bot.send_message(message.chat.id, f"You selected {message.text}.")
         ask_location(message)
-    elif message.text == "Русский язык 🇷🇺":
-        ask_location(message)
+    elif message.text in ["06:00", "07:00", "08:00", "09:00"]:
+        print(message.text)  # TODO: Save the selected option to the database.
+        remove_keyboard = types.ReplyKeyboardRemove(selective=False)
+        bot.send_message(
+            message.chat.id,
+            f"You selected option {message.text}",
+            reply_markup=remove_keyboard,
+        )
     else:
-        bot.send_message(message.chat.id, "Please select a valid language.")
-
-    print(message.text)  # TODO: Save the language to the database.
+        bot.send_message(message.chat.id, "This text cannot be processed.")
 
 
 def ask_location(message):
@@ -69,11 +75,23 @@ def ask_phone_number(message):
 @bot.message_handler(content_types=["contact"])
 def handle_phone_number(message):
     print(message)  # TODO: Save the phone number to the database.
-    remove_keyboard = types.ReplyKeyboardRemove(selective=False)
+    ask_notification_time(message)
+
+
+def ask_notification_time(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    markup.add(
+        types.KeyboardButton("06:00"),
+        types.KeyboardButton("07:00"),
+        types.KeyboardButton("08:00"),
+        types.KeyboardButton("09:00"),
+    )
     bot.send_message(
         message.chat.id,
-        "Thank you! Your phone number has been recorded.",
-        reply_markup=remove_keyboard,
+        """
+        🌞 Please select a time to receive notifications:
+        """,
+        reply_markup=markup,
     )
 
 
