@@ -13,10 +13,15 @@ bot = telebot.TeleBot(TELEGRAM_API_TOKEN)
 @bot.message_handler(commands=["start"])
 def start(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
-    markup.add(types.KeyboardButton("English 🇬🇧"), types.KeyboardButton("Russian 🇷🇺"))
+    markup.add(
+        types.KeyboardButton("English 🇬🇧"), types.KeyboardButton("Русский язык 🇷🇺")
+    )
     bot.send_message(
         message.chat.id,
-        "Please select a language:",
+        """
+        🇬🇧 Please select a language:
+        🇷🇺 Пожалуйста, выберите язык:
+        """,
         reply_markup=markup,
     )
 
@@ -30,6 +35,8 @@ def handle_message(message):
     else:
         bot.send_message(message.chat.id, "Please select a valid language.")
 
+    print(message.text)  # TODO: Save the language to the database.
+
 
 def ask_location(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
@@ -41,7 +48,7 @@ def ask_location(message):
 
 @bot.message_handler(content_types=["location"])
 def handle_location(message):
-    print(message)
+    print(message)  # TODO: Save the location to the database.
     ask_phone_number(message)
 
 
@@ -58,7 +65,7 @@ def ask_phone_number(message):
 
 @bot.message_handler(content_types=["contact"])
 def handle_contact(message):
-    print(message)
+    print(message)  # TODO: Save the phone number to the database.
     remove_keyboard = types.ReplyKeyboardRemove(selective=False)
     bot.send_message(
         message.chat.id,
