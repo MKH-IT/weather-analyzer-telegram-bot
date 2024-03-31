@@ -8,7 +8,7 @@ def get_city_name_by_location(latitude: float, longitude: float) -> str:
     geolocator = Nominatim(user_agent="BOT")
     location = geolocator.reverse((latitude, longitude), language='en')
     address = location.raw.get('address', {})
-    city_name = address.get('city') or address.get('town') or address.get('county')
+    city_name = address.get('city') or address.get('town') or address.get('village') or address.get('county') or 'Unknown'
     return city_name
 
 
