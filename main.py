@@ -19,8 +19,7 @@ def start(message):
     bot.send_message(
         message.chat.id,
         """
-        🇬🇧 Please select a language:
-        🇷🇺 Пожалуйста, выберите язык:
+        🇬🇧 Please select a language: \n🇷🇺 Пожалуйста, выберите язык:
         """,
         reply_markup=markup,
     )
@@ -30,7 +29,7 @@ def start(message):
 def handle_message(message):
     if message.text == "English 🇬🇧":
         ask_location(message)
-    elif message.text == "Russian 🇷🇺":
+    elif message.text == "Русский язык 🇷🇺":
         ask_location(message)
     else:
         bot.send_message(message.chat.id, "Please select a valid language.")
