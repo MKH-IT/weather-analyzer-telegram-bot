@@ -1,8 +1,15 @@
+from geopy.geocoders import Nominatim
+
+
 def get_city_name_by_location(latitude: float, longitude: float) -> str:
     """
     Function to get the city name by latitude and longitude.
     """
-    ...
+    geolocator = Nominatim(user_agent="BOT")
+    location = geolocator.reverse((latitude, longitude), language='en')
+    address = location.raw.get('address', {})
+    city_name = address.get('city') or address.get('town') or address.get('county')
+    return city_name
 
 
 def get_weather_by_city_name(city_name: str) -> dict:
