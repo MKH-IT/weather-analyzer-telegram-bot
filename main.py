@@ -1,6 +1,10 @@
+from datetime import datetime
+
 import telebot
 from decouple import config
 from telebot import types
+import schedule
+import time
 
 from database import JSONDatabase
 from models import UserRepositoryJSONHandler
@@ -73,9 +77,23 @@ def handle_phone_number(message):
     )
 
 
+def send_weather_info():
+    """
+    Function to send weather information to all users on the specified time.
+    """
+    chat_ids = []  # TODO: Get chat_ids from the database.
+    message = f"This is a scheduled message. {datetime.now()}"
+    for chat_id in chat_ids:
+        bot.send_message(chat_id=chat_id, text=message)
+
+
 def main():
     database = UserRepositoryJSONHandler(database=JSONDatabase())
     bot.polling(non_stop=True)
+    schedule.every(5).seconds.do(send_weather_info)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 
 if __name__ == "__main__":
