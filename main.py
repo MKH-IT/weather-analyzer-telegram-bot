@@ -7,11 +7,12 @@ import schedule
 import time
 
 from database import JSONDatabase
-from models import UserRepositoryJSONHandler
+from models import UserRepositoryJSONHandler, User
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN")
 
 bot = telebot.TeleBot(TELEGRAM_API_TOKEN)
+database = UserRepositoryJSONHandler(database=JSONDatabase())
 
 
 @bot.message_handler(commands=["start"])
@@ -27,6 +28,8 @@ def start(message):
         """,
         reply_markup=markup,
     )
+    user = User(user_id=message.chat.id)
+    database.create_user(user)
 
 
 @bot.message_handler(func=lambda message: True)
@@ -106,7 +109,6 @@ def send_weather_info():
 
 
 def main():
-    database = UserRepositoryJSONHandler(database=JSONDatabase())
     bot.polling(non_stop=True)
     schedule.every().hour.do(send_weather_info)
     while True:

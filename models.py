@@ -12,10 +12,10 @@ from database import DatabaseBase
 @dataclass
 class User:
     user_id: int
-    language: str
-    location: str
-    phone_number: str
-    notification_time: str
+    language: str = None
+    location: str = None
+    phone_number: str = None
+    notification_time: str = None
 
 
 class UserRepositoryBase(ABC):
@@ -45,6 +45,7 @@ class UserRepositoryJSONHandler(UserRepositoryBase):
         self.database = database
 
     def create_user(self, user: User):
+        existing_data = self.database.read()
         pass
 
     def get_user(self, user: User):
