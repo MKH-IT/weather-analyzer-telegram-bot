@@ -1,18 +1,19 @@
-from datetime import datetime
+import time
 
+import schedule
 import telebot
 from decouple import config
 from telebot import types
-import schedule
-import time
 
 from database import JSONDatabase
+from helpers import get_weather_by_location
 from models import UserRepositoryJSONHandler, User
 
 TELEGRAM_API_TOKEN = config("TELEGRAM_API_TOKEN")
 
 bot = telebot.TeleBot(TELEGRAM_API_TOKEN)
 database = UserRepositoryJSONHandler(database=JSONDatabase())
+temp_database = {}
 
 
 @bot.message_handler(commands=["start"])
@@ -61,6 +62,10 @@ def ask_location(message):
 @bot.message_handler(content_types=["location"])
 def handle_location(message):
     print(message)  # TODO: Save the location to the database.
+    temp_database[message.chat.id] = {  # TODO: temp solution.
+        "latitude": float(message.location.latitude),
+        "longitude": float(message.location.longitude),
+    }
     ask_phone_number(message)
 
 
@@ -96,16 +101,25 @@ def ask_notification_time(message):
         """,
         reply_markup=markup,
     )
+    send_weather_info(
+        message.chat.id, **temp_database[message.chat.id]
+    )  # TODO: temp solution.
 
 
-def send_weather_info():
+def send_weather_info(chat_id: str, latitude: float, longitude: float):
+    weather_info = get_weather_by_location(
+        latitude=latitude,
+        longitude=longitude,
+    )
+    bot.send_message(chat_id, f"Current weather info {weather_info}")
+
+
+def send_weather_info_bulk():
     """
     Function to send weather information to all users on the specified time.
     """
-    chat_ids = []  # TODO: Get chat_ids from the database.
-    message = f"This is a scheduled message. {datetime.now()}"
-    for chat_id in chat_ids:
-        bot.send_message(chat_id=chat_id, text=message)
+    for chat_id, location in temp_database.items():
+        send_weather_info(chat_id, *location.values())
 
 
 def main():

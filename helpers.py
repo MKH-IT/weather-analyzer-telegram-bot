@@ -45,6 +45,26 @@ def get_weather_by_city_name(city_name: str) -> dict:
     return result
 
 
+def get_weather_by_location(latitude: float, longitude: float) -> dict:
+    url = f"https://api.openweathermap.org/data/2.5/weather"
+    params = {
+        "lat": latitude,
+        "lon": longitude,
+        "appid": TELEGRAM_API_TOKEN,
+        "units": "metric",
+    }
+    response = requests.get(url, params=params)
+    response_payload = response.json()
+    result = {
+        "temperature": response_payload["main"]["temp"],
+        "feels_like": response_payload["main"]["feels_like"],
+        "temp_max": response_payload["main"]["temp_max"],
+        "temp_min": response_payload["main"]["temp_min"],
+    }
+
+    return result
+
+
 def recommend_based_of_weather(weather_info: dict) -> str:
     """
     Function to prepare the weather recommendation.
